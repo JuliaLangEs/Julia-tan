@@ -3,8 +3,8 @@ FROM python:3.6.2-jessie
 
 # Discord
 
-ADD . /app
-WORKDIR /app
+ADD . /Julia-tan
+WORKDIR /Julia-tan
 
 RUN pip install discord.py==0.16.8
 RUN pip install requests==2.18.3

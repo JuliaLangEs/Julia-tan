@@ -1,0 +1,107 @@
+#!/usr/bin/python3.6
+
+from os import getenv
+from subprocess import getoutput
+from textwrap import dedent
+
+from discord.ext.commands import Bot
+
+separator = '#' * 40
+description = 'Soy Julia-tan, el bot de Discord del servidor de JuliaLangEs!'
+bot = Bot(command_prefix='j', description=description)
+debug = False
+
+
+@bot.event
+async def on_ready():
+    print(dedent(
+        f"""
+        {separator}
+        
+        Julia-tan JuliaLangEs Discord bot.
+        
+        BOT NAME: {bot.user.name}
+        BOT ID  : {bot.user.id}
+        
+        {separator}"""
+    ))
+
+
+@bot.command()
+async def l(*, command: str):
+    try:
+        command = command.strip()
+
+        if command.startswith("```julia"):
+            command = command[9:-3]
+        elif command.startswith("```"):
+            command = command[4:-3]
+        elif command.startswith("`"):
+            command = command[1:-1]
+
+        file = "julia-tan.paste"
+        with open(file, "w") as f:
+            f.write(command)
+
+        with open(file, "r") as f:
+            result = getoutput(f"julia {file}")
+
+        if debug:
+            await bot.say(dedent(
+                f"""
+                ```
+                #########
+                # DEBUG #
+                #########
+                ```
+                
+                **Comando:**
+                
+                ```julia
+                {repr(command)}
+                ```
+                
+                **Resultado:**
+                
+                ```julia
+                {repr(result)}
+                ```"""
+            ))
+
+        await bot.say(dedent(
+            f"""
+            **Entrada:**
+            
+            ```julia
+            {command}
+            ```
+            **Salida:**
+            
+            ```julia
+            {result}
+            ```"""
+        ))
+
+    except Exception as error:
+        await bot.say(dedent(
+            f"""
+            ERROR!!
+            
+            **Comando:**
+            
+            ```julia
+            {command}
+            ```
+            
+            **Error:**
+            
+            ```python
+            {error}
+            ```
+            
+            {separator}"""
+        ))
+
+
+if __name__ == '__main__':
+    bot.run(getenv("DISCORD_BOT_TOKEN"))
