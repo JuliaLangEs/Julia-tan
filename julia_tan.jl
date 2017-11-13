@@ -6,6 +6,7 @@ module JuliaTanBot
 export julia_tan
 
 using PyCall
+using Suppressor
 
 @pyimport textwrap
 @pyimport discord.ext.commands as discord
@@ -44,6 +45,8 @@ function julia_tan()
     py"""
     @$bot.command()
     async def l(*, entrada: str):
+        n= entrada.count("@show")
+
         eval  = $eval
         parse = $parse
         entrada= entrada.replace(\"\n\", \";\")
@@ -52,9 +55,15 @@ function julia_tan()
         print(\"Comando: \",comando)
         if (comando!=None):
             comando=comando.group(0)
-            resultado = eval(parse(comando))
+            if (n==0):
+                resultado = eval(parse(comando))
+            else:
+                resultado = eval(parse("@capture_out begin "+comando+" end;"))
         else:
-            resultado = eval(parse(entrada))
+            if (n==0):
+                resultado = eval(parse(entrada))
+            else:
+                resultado = eval(parse("@capture_out begin "+entrada+" end;"))
         comando= comando.replace(\";\", \"\n        julia> \")
         print(\"Resultado: \",resultado)
         await $bot.say($dd(
